@@ -152,6 +152,8 @@ Change: add `diskGb?: number` to `LocalSandboxOptions` + `LocalSandboxEnv` (`LOC
 
 Value: stops one user's runaway agent starving the host + every other user. **Worth doing before opening sign-in to the team.**
 
+Storage-driver constraint (operator must know): `docker --storage-opt size=` only works on quota-capable storage drivers (XFS mounted with `prquota`/`pquota`, btrfs, zfs, or devicemapper). On the stock ext4/overlay2 default of a fresh Hetzner Debian/Ubuntu VM, the flag fails and every `provision()` throws. To use `LOCAL_SANDBOX_DISK_GB`, format the Docker volume root as XFS+pquota (or btrfs/zfs); otherwise leave it unset — the disk-quota protection is simply not in force. There is no portable Docker mechanism for per-container disk quota across all storage drivers.
+
 ### 6.6 (cosmetic) OS string
 
 Current: `profile.spec.os` hardcodes "(dev only)" (`local-sandbox.ts:324`), reaches the model system prompt via `renderComputerBlock`.
