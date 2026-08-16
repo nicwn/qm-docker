@@ -1,0 +1,38 @@
+{
+  // Hetzner single-VM deployment — docker target + SANDBOX_BACKEND=local.
+  // Operator: replace <org-slug>, <public-url>, and choose a sign-in route (see README.md).
+  // This template adapts the `qm init --target docker` output for a single Hetzner VM
+  // with co-located Docker sandboxes (no Fly dependency). Run `qm init` on the VM to
+  // generate .env.example, .gitignore, package.json, deployment.md, and sandbox/
+  // scaffolding, then overlay this file.
+
+  "contract": 1,
+  "orgId": "<org-slug>",
+  "publicUrl": "https://<public-url>",
+
+  "target": "docker",
+  "modelProvider": "anthropic",
+
+  "services": ["core", "web-ui", "admin", "portal", "auth"],
+
+  "plugins": [],
+  "skills": [],
+
+  "env": {
+    "core": {
+      "HARNESS": "pi",
+      "NODE_ENV": "production",
+      "SANDBOX_BACKEND": "local",
+      "DATABASE_URL": "postgres://qm:qm@postgres:5432/qm"
+    },
+    "auth": {
+      "AUTH_EMAIL_TRANSPORT": "smtp"
+    }
+  },
+
+  "secretEnv": {
+    "core": {
+      "ADMIN_GRANTS": "ADMIN_GRANTS"
+    }
+  }
+}

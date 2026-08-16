@@ -1,0 +1,19 @@
+# Caddy systemd unit — drop at /etc/systemd/system/caddy.service (or use the
+# distro's caddy service and point its Caddyfile to deploy/layers/hetzner/Caddyfile).
+# Caddy manages Let's Encrypt for the public origin and proxies to the portal.
+
+[Unit]
+Description=Caddy reverse proxy for qm (Hetzner)
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+ExecStart=/usr/bin/caddy run --config /opt/qm/deploy/layers/hetzner/Caddyfile --adapter caddyfile
+ExecReload=/usr/bin/caddy reload --config /opt/qm/deploy/layers/hetzner/Caddyfile --adapter caddyfile
+Restart=on-failure
+RestartSec=5
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target

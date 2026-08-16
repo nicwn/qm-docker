@@ -1,0 +1,15 @@
+# Caddyfile — Hetzner single-VM qm reverse proxy.
+# Operator: replace <public-url> with the real domain. Caddy auto-manages
+# HTTPS via Let's Encrypt. This routes the public origin to the portal service,
+# the sole Internet-facing service; core, web-ui, admin, auth, Postgres stay
+# private (only reachable on the Docker network).
+
+<public-url> {
+	encode zstd gzip
+
+	reverse_proxy portal:8080
+}
+
+# To block direct access to private services, they are never published on the
+# host. They reach each other over the qm Docker network; only portal is
+# mapped to the host for Caddy to proxy.
