@@ -86,6 +86,14 @@ secret values go in the gitignored `.env`.
    sudo systemctl start postgres-backup.service  # one-shot test before relying on the timer
    ```
 
+   Alternative ingress — Pangolin + Newt: skip Caddy (don't install it, drop
+   the Caddyfile). Install Newt on the host, register the site in Pangolin,
+   and create a Pangolin route targeting `http://127.0.0.1:8081` (the portal
+   host port). Set `publicUrl` to the Pangolin domain. Pangolin terminates TLS at
+   the tunnel edge; keep only the `postgres-backup.{service,timer}` units. If the
+   repo lives outside `/opt/qm`, update `WorkingDirectory` and `ExecStart` in
+   `postgres-backup.service` to match (see step 1 clone path).
+
 9. Verify the web surface per `deployment.md`: open `publicUrl`, sign in,
    send a message, get a real model reply. Agent-computer proof:
    ```bash
