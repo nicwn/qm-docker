@@ -1,6 +1,7 @@
 {
   // Hetzner single-VM deployment — docker target + SANDBOX_BACKEND=local.
-  // Operator: replace <org-slug>, <public-url>, and choose a sign-in route (see README.md).
+  // Operator: replace <org-slug> and <public-url>; confirm modelProvider (default
+  // anthropic — change if you use openai/openrouter) and the sign-in route (see README.md).
   // This template adapts the `qm init --target docker` output for a single Hetzner VM
   // with co-located Docker sandboxes (no Fly dependency). Run `qm init` on the VM to
   // generate .env.example, .gitignore, package.json, deployment.md, and sandbox/
