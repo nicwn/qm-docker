@@ -50,12 +50,17 @@ secret values go in the gitignored `.env`.
 4. Overlay this layer's `qm.config.jsonc` onto the generated one. Edit the
    placeholders: `<org-slug>` (lowercase DNS label), `<public-url>` (your
    domain), and confirm the sign-in route (default `auth` broker + SMTP).
-   Remove `PUBLIC_API_URL` from `env.core` — it is secret-shaped; put it in
-   `.env` instead.
+   `DATABASE_URL` and `PUBLIC_API_URL` live in `secretEnv` — fill their values
+   in `.env`, not in `env.core`.
 
 5. Fill `.env` with real secret values (`ANTHROPIC_API_KEY`, the signing
    secrets generated with `openssl rand -hex 32`, `DATABASE_URL`,
-   `ADMIN_GRANTS=<email>:org_admin`, the SMTP credentials). Never commit `.env`.
+   `ADMIN_GRANTS=<email>:org_admin`, `PUBLIC_API_URL`, the SMTP credentials,
+   and `BACKUP_REPO` for restic). Initialize the restic repo once:
+   ```bash
+   source .env && restic --repo "$BACKUP_REPO" init
+   ```
+   Never commit `.env`.
 
 6. Build the agent-computer image:
    ```bash
@@ -69,13 +74,16 @@ secret values go in the gitignored `.env`.
    node cli/bin/qm.ts doctor
    node cli/bin/qm.ts check --live
    ```
+   Note the portal host port `qm up` prints (default `8081`; see Caddyfile).
 
 8. Point Caddy at this layer and enable the units:
    ```bash
    sudo cp deploy/layers/hetzner/Caddyfile /etc/caddy/Caddyfile  # or use caddy.service
    sudo systemctl enable --now caddy
-   sudo cp deploy/layers/hetzner/postgres-backup.{sh,timer} /etc/systemd/system/
+   sudo cp deploy/layers/hetzner/postgres-backup.{service,timer} /etc/systemd/system/
+   sudo systemctl daemon-reload
    sudo systemctl enable --now postgres-backup.timer
+   sudo systemctl start postgres-backup.service  # one-shot test before relying on the timer
    ```
 
 9. Verify the web surface per `deployment.md`: open `publicUrl`, sign in,

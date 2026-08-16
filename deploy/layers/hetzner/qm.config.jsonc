@@ -22,8 +22,7 @@
     "core": {
       "HARNESS": "pi",
       "NODE_ENV": "production",
-      "SANDBOX_BACKEND": "local",
-      "DATABASE_URL": "postgres://qm:qm@postgres:5432/qm"
+      "SANDBOX_BACKEND": "local"
     },
     "auth": {
       "AUTH_EMAIL_TRANSPORT": "smtp"
@@ -32,7 +31,9 @@
 
   "secretEnv": {
     "core": {
-      "ADMIN_GRANTS": "ADMIN_GRANTS"
+      "ADMIN_GRANTS": "ADMIN_GRANTS",
+      "DATABASE_URL": "DATABASE_URL",
+      "PUBLIC_API_URL": "PUBLIC_API_URL"
     }
   }
 }

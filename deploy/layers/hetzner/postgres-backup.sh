@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # Postgres backup — pg_dump + restic to a remote repo.
 # Operator: set BACKUP_REPO (restic repo, e.g. sftp:storage-box:/qm-backups or
-# b2:qm-backups) and POSTGRES_CONTAINER (the postgres container name) in .env.
-# Run via the postgres-backup.timer unit.
+# b2:qm-backups) in the repo-root .env. Run via postgres-backup.service (timer).
+# Invoke from the repo root so the .env path resolves (the service unit sets
+# WorkingDirectory).
 
 set -euo pipefail
-cd "$(dirname "$0")/.."
+[ -f .env ] || { echo "missing .env at repo root ($(pwd)/.env)" >&2; exit 1; }
 # shellcheck disable=SC1091
-[ -f .env ] && set -a && . ./.env && set +a
+set -a && . ./.env && set +a
 
 : "${POSTGRES_CONTAINER:=postgres}"
 : "${BACKUP_REPO:?set BACKUP_REPO in .env}"

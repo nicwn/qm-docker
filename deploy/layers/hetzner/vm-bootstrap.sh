@@ -28,9 +28,9 @@ else
 	echo "node $(node -v) present, skipping"
 fi
 
-step "installing openssl + git + jq"
+step "installing openssl + git + jq + restic"
 apt-get update -qq
-apt-get install -y -qq openssl git jq curl
+apt-get install -y -qq openssl git jq restic curl
 
 step "installing Caddy"
 if ! command -v caddy >/dev/null 2>&1; then

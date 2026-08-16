@@ -1,11 +1,14 @@
 # Postgres backup timer — daily at 03:00 UTC. Enable with:
 #   systemctl enable --now postgres-backup.timer
+# Test one-shot before relying on it:
+#   systemctl start postgres-backup.service && journalctl -u postgres-backup.service
 [Unit]
 Description=Daily qm Postgres backup (restic)
 
 [Timer]
 OnCalendar=*-*-* 03:00:00 UTC
 Persistent=true
+Unit=postgres-backup.service
 
 [Install]
 WantedBy=timers.target
