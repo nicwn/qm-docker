@@ -24,6 +24,7 @@ sync back into `main`, deploy from a branch that includes them (e.g.
 | `caddy.service` | systemd unit for Caddy |
 | `postgres-backup.sh` | `pg_dump` + restic backup |
 | `postgres-backup.timer` | systemd timer (daily 03:00 UTC) |
+| `PANGOLIN-NEWT.md` | ingress guide for Pangolin + Newt (Docker-Newt routing) |
 | `spec.md` | design spec + trust boundary + upstream changes |
 
 Secrets never live here. `qm init` generates `.env.example`, `.gitignore`,
@@ -108,12 +109,17 @@ secret values go in the gitignored `.env`.
    ```
 
    Alternative ingress — Pangolin + Newt: skip Caddy (don't install it, drop
-   the Caddyfile). Install Newt on the host, register the site in Pangolin,
-   and create a Pangolin route targeting `http://127.0.0.1:8081` (the portal
-   host port). Set `publicUrl` to the Pangolin domain. Pangolin terminates TLS at
-   the tunnel edge; keep only the `postgres-backup.{service,timer}` units. If the
-   repo lives outside `/opt/qm`, update `WorkingDirectory` and `ExecStart` in
-   `postgres-backup.service` to match (see step 1 clone path).
+   the Caddyfile). Install Newt, register the site in Pangolin, and create a
+   Pangolin route targeting qm's portal host port (default `8081`). **The
+   target address depends on how Newt runs** — `http://127.0.0.1:8081` works
+   only if Newt is a host binary; a Newt running as a Docker container must
+   target the Docker bridge gateway (`http://172.17.0.1:8081`) or
+   `http://host.docker.internal:8081`, or you get a 502. See
+   [`PANGOLIN-NEWT.md`](./PANGOLIN-NEWT.md) for the diagnose steps and the full
+   routing guide. Set `publicUrl` to the Pangolin domain; Pangolin terminates
+   TLS at the tunnel edge. Keep only the `postgres-backup.{service,timer}`
+   units. If the repo lives outside `/opt/qm`, update `WorkingDirectory` and
+   `ExecStart` in `postgres-backup.service` to match (see step 1 clone path).
 
 9. Verify the web surface per `deployment.md`: open `publicUrl`, sign in,
    send a message, get a real model reply. Agent-computer proof:
