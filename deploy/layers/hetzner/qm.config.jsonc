@@ -2,10 +2,12 @@
   // Hetzner single-VM deployment — docker target + SANDBOX_BACKEND=local.
   // Operator: replace <org-slug> and <public-url>; confirm modelProvider (default
   // anthropic — change if you use openai/openrouter) and the sign-in route (see README.md).
+  // Postgres is managed by qm (it starts a `pg` container and injects DATABASE_URL
+  // into core); do NOT set DATABASE_URL here or in .env.
   // This template adapts the `qm init --target docker` output for a single Hetzner VM
   // with co-located Docker sandboxes (no Fly dependency). Run `qm init` on the VM to
   // generate .env.example, .gitignore, package.json, deployment.md, and sandbox/
-  // scaffolding, then overlay this file.
+  // scaffolding, then overlay (overwrite) this file.
 
   "contract": 1,
   "orgId": "<org-slug>",
@@ -33,7 +35,6 @@
   "secretEnv": {
     "core": {
       "ADMIN_GRANTS": "ADMIN_GRANTS",
-      "DATABASE_URL": "DATABASE_URL",
       "PUBLIC_API_URL": "PUBLIC_API_URL"
     }
   }

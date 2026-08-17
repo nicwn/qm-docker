@@ -7,11 +7,12 @@ end users, each with an isolated scope, sandbox, memory, and keychain.
 
 ## Prerequisites
 
-This layer requires a qm CLI change that relaxes the docker target's
-`sandbox.app` requirement when `SANDBOX_BACKEND=local` (see `spec.md` §6.3).
-That change ships upstream and syncs back into the fork via `update-qm`. Until
-it merges, `qm check` refuses a docker target with no `sandbox.app`; the deploy
-runs once the change is in your fork's `main`.
+This layer requires qm CLI changes (upstream PR #553): the docker target's
+`sandbox.app` relaxation for `SANDBOX_BACKEND=local`, and the auth-broker
+`.internal` networking fix (portal's private-network guard rejects the bare
+`http://auth:8080` the docker backend used). Until those merge upstream and
+sync back into `main`, deploy from a branch that includes them (e.g.
+`local-sandbox-hardening`), not bare `main`.
 
 ## What lives where
 
@@ -31,6 +32,10 @@ secret values go in the gitignored `.env`.
 
 ## Install runbook (operator, on the VM)
 
+> Run the CLI as `node cli/bin/qm.ts <command>` (e.g. `init`, `setup`, `check`,
+> `up`). Never `npm exec qm` or bare `qm` — a source checkout has no published
+> binary, and `npm exec qm` errors with "could not determine executable to run".
+
 1. Provision a Hetzner Cloud VM (Debian/Ubuntu; CX32 or larger for a team).
 
 2. Bootstrap the host and clone the fork:
@@ -47,16 +52,29 @@ secret values go in the gitignored `.env`.
    npm install
    ```
 
-4. Overlay this layer's `qm.config.jsonc` onto the generated one. Edit the
-   placeholders: `<org-slug>` (lowercase DNS label), `<public-url>` (your
-   domain), and confirm the sign-in route (default `auth` broker + SMTP).
-   `DATABASE_URL` and `PUBLIC_API_URL` live in `secretEnv` — fill their values
-   in `.env`, not in `env.core`.
+4. Overwrite the generated `qm.config.jsonc` with this layer's template (which
+   omits the `sandbox.app` block `qm init` scaffolds — the local backend needs no
+   Fly app), then edit the placeholders: `<org-slug>` (lowercase DNS label),
+   `<public-url>` (your domain), `modelProvider` (anthropic/openai/openrouter),
+   and confirm the sign-in route (default `auth` broker + SMTP).
+   ```bash
+   cp deploy/layers/hetzner/qm.config.jsonc qm.config.jsonc
+   ```
+   `PUBLIC_API_URL` lives in `secretEnv` — fill it in `.env`, not in `env.core`.
+   Do **not** set `DATABASE_URL`: qm manages Postgres (starts a `pg` container
+   and injects `DATABASE_URL` into core itself); setting it makes core look for
+   an external database that isn't there.
 
-5. Fill `.env` with real secret values (`ANTHROPIC_API_KEY`, the signing
-   secrets generated with `openssl rand -hex 32`, `DATABASE_URL`,
-   `ADMIN_GRANTS=<email>:org_admin`, `PUBLIC_API_URL`, the SMTP credentials,
-   and `BACKUP_REPO` for restic). Initialize the restic repo once:
+5. Fill `.env`. The easiest path is the interactive wizard, which generates the
+   signing secrets and validates the provider key:
+   ```bash
+   node cli/bin/qm.ts setup
+   ```
+   Have ready: the provider API key for your `modelProvider`,
+   `ADMIN_GRANTS=<email>:org_admin`,
+   `PUBLIC_API_URL=http://host.docker.internal:8080` (sandboxes reach core via
+   the Docker host gateway), SMTP credentials, and `BACKUP_REPO` (restic repo).
+   Then initialize restic:
    ```bash
    source .env && restic --repo "$BACKUP_REPO" init
    ```
@@ -67,14 +85,17 @@ secret values go in the gitignored `.env`.
    npm run sandbox:local:build
    ```
 
-7. Validate and deploy:
+7. Validate and deploy. A private fork has no published service images, so
+   `qm up` builds them locally with `--build-from` (cached after the first run):
    ```bash
    node cli/bin/qm.ts check
-   node cli/bin/qm.ts up
+   node cli/bin/qm.ts up --build-from
    node cli/bin/qm.ts doctor
    node cli/bin/qm.ts check --live
    ```
-   Note the portal host port `qm up` prints (default `8081`; see Caddyfile).
+   Note the portal host port `qm up` prints (default `8081`; that's the
+   Caddy/Pangolin target). The "no sandbox image pinned" note (if shown) is a
+   false positive for the local path — ignore it.
 
 8. Point Caddy at this layer and enable the units:
    ```bash
