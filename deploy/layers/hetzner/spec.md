@@ -1,7 +1,7 @@
 # Hetzner single-VM deployment — design spec
 
 Status: approved. Operator review gate passed. Config policy: commit template `qm.config.jsonc` with placeholders (operator edits real values at install). Scope: Part A (fork-layer scaffolding) + Part B (upstream core hardening §6.1/6.2), both included in this build.
-Scope: fork of qm (`origin` → `<owner>/qm-private`, `upstream` → `yc-software/qm`).
+Scope: fork of qm (`origin` → your fork, `upstream` → `yc-software/qm`).
 Fork-rule compliance: org-specific material under `deploy/layers/<org>/`; core stays byte-identical; core changes go upstream via `upstream-pr`.
 
 ## 1. Goal
