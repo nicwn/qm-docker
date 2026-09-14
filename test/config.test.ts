@@ -390,6 +390,12 @@ test("SANDBOX_BACKEND: unset defaults to local (dev only); the retired secondary
   assert.ok(!("sandboxSecondaryBackend" in config));
 });
 
+test("QM_CORE_CONTAINER reaches the local sandbox config and not the AWS one", () => {
+  const config = loadConfig({ ...productionEnv, QM_CORE_CONTAINER: "qm-acme-core" });
+  assert.equal(config.localSandbox.coreContainer, "qm-acme-core");
+  assert.ok(!("coreContainer" in (config.awsSandbox ?? {})));
+});
+
 test("Fly identity and Slack runtime settings are parsed once into Config", () => {
   const config = loadConfig({
     FLY_APP_NAME: "qm-core",
