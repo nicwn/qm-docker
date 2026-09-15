@@ -12,6 +12,67 @@ You can also try out a 3rd-party hosted version of QM [here](https://www.agent37
 
 If you're an infra provider interested in offering a hosted version of QM, feel free to reach out.
 
+## This fork: single-host Docker deployments
+
+This repository is a fork of [`yc-software/qm`](https://github.com/yc-software/qm) with one purpose:
+**make the `docker` target work as a real deployment**, not only a local test drive. Upstream runs
+core in a container too, but only exercises `docker` + local sandboxes with core on the host
+(`qm dev`), where two assumptions happen to hold. Put core in a container — which is what the
+target itself does — and both break.
+
+### What's different
+
+- **`src/config.ts`** — `QM_CORE_CONTAINER` now reaches the local sandbox config. It was wired into
+  the _AWS_ sandbox builder, so a containerised core never learned its own container name: the
+  sandbox was created with a published host port and core dialled `127.0.0.1:<port>`, which inside
+  the core container is core itself. Every provision died with `ECONNREFUSED` and the sandbox was
+  killed after the readiness timeout.
+- **`cli/src/backends/docker.ts`** — for `target: "docker"` with `sandbox.backend: "local"`, the CLI
+  now derives `PUBLIC_API_URL` as `http://qm-<orgId>-core:<port>`. That is the address agent
+  sandboxes use to reach core: `host.docker.internal` resolves to the default-bridge gateway
+  (`172.17.0.1`), which is not routable from a per-scope sandbox network, and `127.0.0.1` is core.
+
+Both changes ship with regression tests. Nothing else diverges.
+`git diff upstream/main...main` shows the entire delta.
+
+### Deploying it
+
+```bash
+# 1. Scaffold a deployment directory (the upstream CLI is fine for this step)
+npm exec --yes --package=@yc-software/qm@latest -- \
+  qm init . --org <slug> --target docker
+
+# 2. In qm.config.jsonc set publicUrl and the services you want, plus:
+#      "sandbox": { "backend": "local", "image": "qm-<slug>-sandbox-local:latest" }
+
+# 3. Build the sandbox image from this checkout:
+LOCAL_SANDBOX_IMAGE=qm-<slug>-sandbox-local:latest npm run sandbox:local:build
+
+# 4. Fill .env (`node cli/bin/qm.ts setup` walks through it), then reconcile with
+#    THIS repo's CLI so the fixes above apply:
+node cli/bin/qm.ts up --build-from=<path to this checkout>
+```
+
+Three things worth knowing:
+
+- **Never run a bare `qm up` from this checkout.** `cli/manifest.json` is deliberately left as the
+  release sentinel (`registry.invalid`) so that path fails loudly, instead of pulling upstream
+  images and silently reverting the fork. Always pass `--build-from`.
+- **Build the sandbox image first** (step 3). With `sandbox.image` set, `up` skips its own image
+  build, so a missing image means `up` reports success and the first agent turn is what fails.
+- **`qm check --live` is not implemented for `docker`.** Verify with `qm up`, `qm conformance`, and
+  a real sign-in plus one agent turn that runs a command in the sandbox.
+
+### Syncing upstream
+
+```bash
+git fetch upstream && git merge upstream/main
+```
+
+Only those two files diverge, so conflicts should be rare and small.
+
+---
+
 ## What is QM?
 
 Most agents are designed like personal assistants. You can make one work for a whole
