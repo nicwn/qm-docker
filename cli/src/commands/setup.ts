@@ -102,9 +102,11 @@ const PLAYBOOKS: Readonly<Record<string, readonly string[]>> = {
     "returned after installing the Slack sign-in app.",
   ],
   PUBLIC_API_URL: [
-    "The public URL agent sandboxes use to reach core's self-API. For docker this",
-    "is usually a tunnel or LAN address; for fly/aws it matches your apiUrl when",
-    "configured (split-hostname stacks), otherwise your publicUrl.",
+    "The URL agent sandboxes use to reach core's self-API. On the docker target with a",
+    "local sandbox backend the CLI derives http://<appPrefix>-core:<port> and ignores",
+    "this value, because that is the only address a sandbox can reach; for fly/aws it",
+    "matches your apiUrl when configured (split-hostname stacks), otherwise your",
+    "publicUrl.",
   ],
   FLY_DEPLOY_API_TOKEN: [
     "Required only when env.core.DEPLOY_PROVIDER is explicitly set to fly.",
