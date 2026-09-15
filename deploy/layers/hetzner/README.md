@@ -28,11 +28,12 @@ values go in the gitignored `.env`.
 
 1. Provision a Hetzner Cloud VM (Debian/Ubuntu; CX32 or larger for a team).
 
-2. Bootstrap the host and clone this fork:
+2. Clone this fork, then bootstrap the host (the script lives in the repo, so it has to
+   exist first):
 
    ```bash
-   sudo bash deploy/layers/hetzner/vm-bootstrap.sh
    git clone https://github.com/nicwn/qm-docker /opt/qm && cd /opt/qm
+   sudo bash deploy/layers/hetzner/vm-bootstrap.sh
    npm ci
    ```
 
@@ -63,7 +64,9 @@ values go in the gitignored `.env`.
    ```
 
    Have ready: the provider API key for your `modelProvider`, `ADMIN_GRANTS=<email>:org_admin`,
-   SMTP credentials for the built-in `auth` broker, and `BACKUP_REPO` (a restic repo). Then:
+   SMTP credentials for the built-in `auth` broker, `BACKUP_REPO` (a restic repo), and a
+   **non-interactive** restic credential — `RESTIC_PASSWORD_FILE` (preferred) or
+   `RESTIC_PASSWORD` — because the backup timer has no terminal to prompt on. Then:
 
    ```bash
    source .env && restic --repo "$BACKUP_REPO" init
@@ -99,11 +102,16 @@ values go in the gitignored `.env`.
 8. Ingress. Note the portal host port `up` prints (default `8081` = `QM_BASE_PORT` 8080 +
    the portal's offset) — that is the target for whichever ingress you choose.
 
-   **Caddy on the VM:**
+   **Caddy on the VM:** edit the placeholder first — the template ships `<public-url>`, which
+   Caddy cannot load — then validate and reload. Bootstrap already installed and started
+   Caddy, so `enable --now` on its own would not pick up the new config:
 
    ```bash
+   sed -i 's|<public-url>|qm.example.com|' deploy/layers/hetzner/Caddyfile
    sudo cp deploy/layers/hetzner/Caddyfile /etc/caddy/Caddyfile
-   sudo systemctl enable --now caddy
+   sudo caddy validate --config /etc/caddy/Caddyfile
+   sudo systemctl enable caddy
+   sudo systemctl reload caddy || sudo systemctl restart caddy
    ```
 
    **Or Pangolin + Newt:** skip Caddy entirely. Install Newt, register the site in
@@ -131,6 +139,24 @@ values go in the gitignored `.env`.
    ```bash
    docker exec qm-sbx-<scope-slug> cat /root/workspace/qm-computer-proof.txt
    ```
+
+## Network exposure
+
+The `docker` target publishes every service on the host with no IP prefix, so **portal is
+reachable on `0.0.0.0:8081`** (and core, web-ui and admin on 8080/8082/8083) whether or not
+something is proxying in front of it. Caddy or Pangolin adds TLS and a hostname; it does not
+close the port. Restrict it at the Hetzner Cloud Firewall or on the host:
+
+- allow `80`/`443` (and SSH) from the internet;
+- allow the portal port `8081` only from what actually needs it — the Newt container's host
+  gateway, or nothing at all when Caddy proxies over loopback;
+- never expose `5432` (Postgres) or `8080` (core).
+
+Check from outside once deployed:
+
+```bash
+nmap -Pn -p 80,443,8080,8081,8082,8083 <server-ip>
+```
 
 ## Trust boundary
 

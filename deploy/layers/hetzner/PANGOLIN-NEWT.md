@@ -10,19 +10,24 @@ Newt running as a Docker container.
 
 Newt resolves the Pangolin route target **from inside its own process**.
 If Newt is a Docker container, `http://localhost:8081` and `http://127.0.0.1:8081`
-point at Newt's *own* loopback — nothing is listening there, so Pangolin gets
-a 502. The target must be an address that reaches the *host* where qm's
+point at Newt's _own_ loopback — nothing is listening there, so Pangolin gets
+a 502. The target must be an address that reaches the _host_ where qm's
 portal is published.
 
-| Newt shape | Pangolin route target | Why |
-|---|---|---|
-| Host binary (systemd, bare) | `http://127.0.0.1:8081` | Newt shares the host loopback |
-| Docker container (default bridge) | `http://172.17.0.1:8081` | Newt reaches the host via the Docker bridge gateway |
-| Docker container (with `--add-host=host.docker.internal:host-gateway`) | `http://host.docker.internal:8081` | Newt reaches the host via the documented alias |
+| Newt shape                                                             | Pangolin route target              | Why                                                 |
+| ---------------------------------------------------------------------- | ---------------------------------- | --------------------------------------------------- |
+| Host binary (systemd, bare)                                            | `http://127.0.0.1:8081`            | Newt shares the host loopback                       |
+| Docker container (default bridge)                                      | `http://172.17.0.1:8081`           | Newt reaches the host via the Docker bridge gateway |
+| Docker container (with `--add-host=host.docker.internal:host-gateway`) | `http://host.docker.internal:8081` | Newt reaches the host via the documented alias      |
 
 Portal binds `0.0.0.0:8081` (the docker target publishes with no IP prefix), so
 any host-reachable address works; the question is only what Newt's process
 can resolve to the host.
+
+That also means **`8081` is reachable from the internet unless you firewall it** — the
+tunnel does not close the port. Allow `80`/`443` publicly and restrict `8081` to the host
+gateway (or to nothing, when Caddy fronts portal on the host). See "Network exposure" in
+[`README.md`](./README.md).
 
 ## Find the right address (run on the qm host)
 
