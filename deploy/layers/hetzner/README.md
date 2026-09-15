@@ -28,10 +28,13 @@ values go in the gitignored `.env`.
 
 1. Provision a Hetzner Cloud VM (Debian/Ubuntu; CX32 or larger for a team).
 
-2. Clone this fork, then bootstrap the host (the script lives in the repo, so it has to
-   exist first):
+2. As the deployment user, install git, make the deployment directory writable, then clone
+   and bootstrap. (`/opt` is root-owned and a fresh VM has no git, so both have to be dealt
+   with before the clone):
 
    ```bash
+   sudo apt-get update && sudo apt-get install -y git curl
+   sudo mkdir -p /opt/qm && sudo chown "$USER" /opt/qm
    git clone https://github.com/nicwn/qm-docker /opt/qm && cd /opt/qm
    sudo bash deploy/layers/hetzner/vm-bootstrap.sh
    npm ci
@@ -108,8 +111,8 @@ values go in the gitignored `.env`.
 
    ```bash
    sed -i 's|<public-url>|qm.example.com|' deploy/layers/hetzner/Caddyfile
+   caddy validate --config deploy/layers/hetzner/Caddyfile   # validate BEFORE installing it
    sudo cp deploy/layers/hetzner/Caddyfile /etc/caddy/Caddyfile
-   sudo caddy validate --config /etc/caddy/Caddyfile
    sudo systemctl enable caddy
    sudo systemctl reload caddy || sudo systemctl restart caddy
    ```
@@ -148,8 +151,12 @@ something is proxying in front of it. Caddy or Pangolin adds TLS and a hostname;
 close the port. Restrict it at the Hetzner Cloud Firewall or on the host:
 
 - allow `80`/`443` (and SSH) from the internet;
-- allow the portal port `8081` only from what actually needs it — the Newt container's host
-  gateway, or nothing at all when Caddy proxies over loopback;
+- allow the portal port `8081` only from what actually needs it: a Newt **container**
+  connects from its bridge address (`172.17.0.0/16`), a Newt **host binary** from loopback,
+  and Caddy proxies over loopback. The Hetzner Cloud Firewall only sees traffic arriving
+  from the internet, so denying `8081` there is enough — it does not touch the internal
+  Newt→host hop. If you filter on the host with `ufw` instead, allow `172.17.0.0/16` and
+  `lo` explicitly;
 - never expose `5432` (Postgres) or `8080` (core).
 
 Check from outside once deployed:

@@ -25,9 +25,10 @@ any host-reachable address works; the question is only what Newt's process
 can resolve to the host.
 
 That also means **`8081` is reachable from the internet unless you firewall it** — the
-tunnel does not close the port. Allow `80`/`443` publicly and restrict `8081` to the host
-gateway (or to nothing, when Caddy fronts portal on the host). See "Network exposure" in
-[`README.md`](./README.md).
+tunnel does not close the port. Allow `80`/`443` publicly and deny `8081` from the
+internet; a Newt container's hop to the host is internal (`172.17.0.0/16`), so the Hetzner
+Cloud Firewall — which only sees internet traffic — can block `8081` without breaking the
+route. See "Network exposure" in [`README.md`](./README.md).
 
 ## Find the right address (run on the qm host)
 
