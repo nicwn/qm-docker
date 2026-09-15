@@ -1,11 +1,11 @@
 {
-  "//": "Fork: real digests so the source CLI can run without the release process. Refresh when the pinned @yc-software/qm release moves; `--build-from` builds the services locally from this checkout, so only `sandboxBase` is actually pulled on the docker + local-sandbox path.",
-  "sandboxBase": "ghcr.io/yc-software/qm/sandbox-base@sha256:a39a64b1d05479f0fb73bd503a1457f1ea23c1d1c6609449868f419f216a63d0",
+  "//": "Fork: keep these refs as the sentinel. A real digest here makes a bare `up` from a source checkout succeed while pulling upstream images and silently reverting the fork; the sentinel makes that path fail loudly instead. Give the source CLI its sandbox base by building the image locally and setting sandbox.image (see deploy/layers notes), not by pinning here.",
+  "sandboxBase": "registry.invalid/qm/qm-sandbox-base@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "services": {
-    "core": "ghcr.io/yc-software/qm/core@sha256:5624e031ecbd00799040d3f614b9d70aee266895ecaf07a980357169054f51b7",
-    "web-ui": "ghcr.io/yc-software/qm/web-ui@sha256:8065caa09146a0b7af81f810d4e773bc839cfc94f3e08200075aa5986db143a4",
-    "admin": "ghcr.io/yc-software/qm/admin@sha256:2e3c329d9d158d0fc6299ff54381dcd708f63dc0313ee370ccbb11a752fc0ff7",
-    "portal": "ghcr.io/yc-software/qm/portal@sha256:767c4c36b2a8f1a477003e153b4057fc27324c08bb263e52e17bf1ce4c319e95",
-    "auth": "ghcr.io/yc-software/qm/auth@sha256:75f2796d471fb82227b80efdde012689d1523d2f9312f94af8f1c881a6d4b3a6"
+    "core": "registry.invalid/qm/qm-core@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "web-ui": "registry.invalid/qm/qm-web-ui@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "admin": "registry.invalid/qm/qm-admin@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "portal": "registry.invalid/qm/qm-portal@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "auth": "registry.invalid/qm/qm-auth@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
   }
 }
