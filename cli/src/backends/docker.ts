@@ -415,6 +415,9 @@ function serviceEnv(ctx: DockerCtx, service: ServiceName): Record<string, string
   if (ctx.signingSecret) env.CORE_SIGNING_SECRET = ctx.signingSecret;
   if (service === "core") {
     env.DATABASE_URL = ctx.databaseUrl;
+    if (localSandboxActive(config)) {
+      env.PUBLIC_API_URL = `http://${ctx.prefix}-core:${serviceDef("core").docker.internalPort}`;
+    }
     for (const key of ctx.sandboxSecretKeys) {
       const value = out[key];
       if (value !== undefined) env[key] = value;
@@ -607,7 +610,10 @@ function missingRequiredOperatorSecrets(ctx: DockerCtx): string[] {
   return computedSecrets(ctx.config)
     .filter(
       (secret) =>
-        secret.required && secret.managedBy === "operator" && isInvalidSecret(secret.name, lookup(secret.name)),
+        secret.required &&
+        secret.managedBy === "operator" &&
+        !(secret.name === "PUBLIC_API_URL" && localSandboxActive(ctx.config)) &&
+        isInvalidSecret(secret.name, lookup(secret.name)),
     )
     .map((secret) => secret.name);
 }
