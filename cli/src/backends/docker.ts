@@ -610,10 +610,7 @@ function missingRequiredOperatorSecrets(ctx: DockerCtx): string[] {
   return computedSecrets(ctx.config)
     .filter(
       (secret) =>
-        secret.required &&
-        secret.managedBy === "operator" &&
-        !(secret.name === "PUBLIC_API_URL" && localSandboxActive(ctx.config)) &&
-        isInvalidSecret(secret.name, lookup(secret.name)),
+        secret.required && secret.managedBy === "operator" && isInvalidSecret(secret.name, lookup(secret.name)),
     )
     .map((secret) => secret.name);
 }
