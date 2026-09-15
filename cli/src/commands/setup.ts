@@ -103,7 +103,7 @@ const PLAYBOOKS: Readonly<Record<string, readonly string[]>> = {
   ],
   PUBLIC_API_URL: [
     "The URL agent sandboxes use to reach core's self-API. On the docker target with a",
-    "local sandbox backend the CLI derives http://<appPrefix>-core:<port> and ignores",
+    "local sandbox backend the CLI derives http://qm-<orgId>-core:<port> and ignores",
     "this value, because that is the only address a sandbox can reach; for fly/aws it",
     "matches your apiUrl when configured (split-hostname stacks), otherwise your",
     "publicUrl.",

@@ -1,5 +1,4 @@
 {
-  "//": "Fork: keep these refs as the sentinel. A real digest here makes a bare `up` from a source checkout succeed while pulling upstream images and silently reverting the fork; the sentinel makes that path fail loudly instead. Give the source CLI its sandbox base by building the image locally and setting sandbox.image (see deploy/layers notes), not by pinning here.",
   "sandboxBase": "registry.invalid/qm/qm-sandbox-base@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "services": {
     "core": "registry.invalid/qm/qm-core@sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
