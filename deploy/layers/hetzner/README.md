@@ -111,7 +111,7 @@ values go in the gitignored `.env`.
 
    ```bash
    sed -i 's|<public-url>|qm.example.com|' deploy/layers/hetzner/Caddyfile
-   caddy validate --config deploy/layers/hetzner/Caddyfile   # validate BEFORE installing it
+   caddy validate --config deploy/layers/hetzner/Caddyfile
    sudo cp deploy/layers/hetzner/Caddyfile /etc/caddy/Caddyfile
    sudo systemctl enable caddy
    sudo systemctl reload caddy || sudo systemctl restart caddy
@@ -153,10 +153,11 @@ close the port. Restrict it at the Hetzner Cloud Firewall or on the host:
 - allow `80`/`443` (and SSH) from the internet;
 - allow the portal port `8081` only from what actually needs it: a Newt **container**
   connects from its bridge address (`172.17.0.0/16`), a Newt **host binary** from loopback,
-  and Caddy proxies over loopback. The Hetzner Cloud Firewall only sees traffic arriving
-  from the internet, so denying `8081` there is enough — it does not touch the internal
-  Newt→host hop. If you filter on the host with `ufw` instead, allow `172.17.0.0/16` and
-  `lo` explicitly;
+  and Caddy proxies over loopback. Prefer the Hetzner Cloud Firewall: it sees traffic
+  arriving from the internet, and denying `8081` there cannot break the internal
+  Newt→host hop. Do **not** rely on `ufw` for this — Docker publishes through its own
+  iptables rules and bypasses ufw's inbound filtering, so a Docker-published `8081` stays
+  reachable regardless; filter in Docker's `DOCKER-USER` chain instead;
 - never expose `5432` (Postgres) or `8080` (core).
 
 Check from outside once deployed:
