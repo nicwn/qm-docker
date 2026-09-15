@@ -1,0 +1,12 @@
+# Caddyfile — Hetzner single-VM qm reverse proxy.
+# Operator: replace <public-url> with the real domain. Caddy runs on the host
+# (not inside the Docker network), so it must proxy to the host-published port,
+# not the Docker-internal service name. `qm up` maps portal to host port
+# baseHostPort+1 (default base 8080 → 8081); override with QM_BASE_PORT.
+# Core, web-ui, admin, auth, Postgres stay private (Docker network only).
+
+<public-url> {
+	encode zstd gzip
+
+	reverse_proxy 127.0.0.1:8081
+}

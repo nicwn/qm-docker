@@ -1,0 +1,42 @@
+{
+  // Hetzner single-VM deployment — docker target + local (co-located) Docker sandboxes.
+  // Operator: replace <org-slug>, <public-url>, <sandbox-image>, and modelProvider.
+  // Postgres is managed by qm (it starts a `pg` container and injects DATABASE_URL into
+  // core); do NOT set DATABASE_URL here or in .env.
+  // This template adapts the `qm init --target docker` output for a single VM. Run
+  // `qm init` to generate .env.example, .gitignore, package.json, deployment.md and
+  // sandbox/, then overlay (overwrite) this file.
+
+  "contract": 1,
+  "orgId": "<org-slug>",
+  "publicUrl": "https://<public-url>",
+
+  "target": "docker",
+  "modelProvider": "anthropic",
+
+  "services": ["core", "web-ui", "admin", "portal", "auth"],
+
+  // Pins the agent-computer image. Setting it makes `up` skip its own image build, so
+  // build it first: LOCAL_SANDBOX_IMAGE=<sandbox-image> npm run sandbox:local:build
+  "sandbox": { "backend": "local", "image": "<sandbox-image>" },
+
+  "plugins": [],
+  "skills": [],
+
+  "env": {
+    "core": {
+      "HARNESS": "pi",
+      "NODE_ENV": "production",
+    },
+    "auth": {
+      "AUTH_EMAIL_TRANSPORT": "smtp",
+    },
+  },
+
+  "secretEnv": {
+    "core": {
+      "ADMIN_GRANTS": "ADMIN_GRANTS",
+      "PUBLIC_API_URL": "PUBLIC_API_URL",
+    },
+  },
+}

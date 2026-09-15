@@ -1,0 +1,11 @@
+# Postgres backup service — runs postgres-backup.sh from the repo root so it
+# finds .env. Drop at /etc/systemd/system/postgres-backup.service.
+[Unit]
+Description=One-shot qm Postgres backup (restic)
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/qm
+ExecStart=/opt/qm/deploy/layers/hetzner/postgres-backup.sh
